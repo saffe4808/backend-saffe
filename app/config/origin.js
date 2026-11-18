@@ -1,12 +1,16 @@
 export const normalizarOrigen = (valor) => {
-    const origen = valor.trim();
+    let origen = (valor || "").trim();
     if (!origen) {
         return "";
     }
 
+    if (!/^https?:\/\//i.test(origen)) {
+        origen = `https://${origen}`;
+    }
+
     try {
-        return new URL(origen).origin;
+        return new URL(origen).origin.toLowerCase();
     } catch {
-        return origen.replace(/\/+$/, "");
+        return origen.replace(/\/+$/, "").toLowerCase();
     }
 };

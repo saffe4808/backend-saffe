@@ -13,6 +13,10 @@ import routeHistorial from "./app/routes/routes.historial.js";
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
+
+// Necesario en Render / proxies para reconocer HTTPS y headers adecuadamente
+app.set("trust proxy", 1);
+
 const allowedOrigins = (process.env.FRONTEND_ORIGIN ||
     "http://localhost:4000,https://saffefrontend.up.railway.app")
     .split(",")
@@ -22,7 +26,21 @@ const allowedOrigins = (process.env.FRONTEND_ORIGIN ||
 app.use(express.json());
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(normalizarOrigen(origin))) {
+        // Peticiones sin origen (Postman, curl, Render health check, server-to-server)
+        if (!origin) {
+            return callback(null, true);
+        }
+
+        const normalizado = normalizarOrigen(origin);
+
+        // Permitir si coincide con la lista, comodín *, subdominios de Render o localhost
+        if (
+            allowedOrigins.includes("*") ||
+            allowedOrigins.includes(normalizado) ||
+            normalizado.endsWith(".onrender.com") ||
+            normalizado.includes("localhost") ||
+            normalizado.includes("127.0.0.1")
+        ) {
             return callback(null, true);
         }
 
@@ -30,6 +48,7 @@ app.use(cors({
     },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
     optionsSuccessStatus: 204
 }));
 app.use(express.urlencoded({ extended: true }));
