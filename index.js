@@ -2,7 +2,7 @@ import "./app/config/env.js";
 import express from "express";
 import cors from "cors";
 
-import conexion from "./app/config/database.js";
+import conexion, { host as dbHost, port as dbPort } from "./app/config/database.js";
 import { migrarBaseDeDatos } from "./app/config/migrate.js";
 import { normalizarOrigen } from "./app/config/origin.js";
 import routeUsuario from "./app/routes/routes.usuario.js";
@@ -98,8 +98,13 @@ const iniciarServidor = async () => {
             console.error(
                 "La base de datos configurada no existe. Verifica DB_NAME en backend/.env."
             );
+        } else if (error.code === "ENOTFOUND") {
+            console.error(
+                `Error DNS (ENOTFOUND): No se pudo resolver el host "${dbHost}". ` +
+                "Verifica en Render que DB_HOST sea solo el nombre de dominio, sin 'mysql://', sin ':4000', ni espacios."
+            );
         } else {
-            console.error("No se pudo preparar la base de datos:", error.code || error.message);
+            console.error(`No se pudo preparar la base de datos (${dbHost}:${dbPort}):`, error.code || error.message);
         }
         await conexion.end();
         process.exit(1);
