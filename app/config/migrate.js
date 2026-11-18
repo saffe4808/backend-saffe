@@ -100,6 +100,9 @@ export const migrarBaseDeDatos = async () => {
     await asegurarColumna("accesos", "fecha_acceso", "DATETIME NULL");
     await asegurarColumna("accesos", "estado", "VARCHAR(50) NULL");
 
+    await asegurarColumna("saffe_codigos_recuperacion", "correo", "VARCHAR(254) NULL");
+    await asegurarColumna("saffe_codigos_recuperacion", "usado", "TINYINT(1) NOT NULL DEFAULT 0");
+
     await conexion.query(`
         UPDATE accesos
         SET fecha_acceso = created_at

@@ -59,6 +59,9 @@ app.use("/api", routeAcceso);
 app.use("/api", routeEscaneo);
 app.use("/api", routeHistorial);
 
+// Alias directos para /forgot-password y /reset-password (además de /api/...)
+app.use("/", routeAuth);
+
 app.get("/", (req, res) => {
     res.json({ mensaje: "Backend SAFFE funcionando correctamente" });
 });
