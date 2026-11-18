@@ -4,7 +4,8 @@ import {
 
     registrarAcceso,
     listarAccesos,
-    obtenerAcceso
+    obtenerAcceso,
+    actualizarEstadoAcceso
 
 } from "../controllers/controller.acceso.js";
 
@@ -20,5 +21,8 @@ router.get("/accesos", verificarToken, listarAccesos);
 
 // Buscar acceso
 router.get("/accesos/:id", verificarToken, obtenerAcceso);
+
+// Actualizar estado del acceso
+router.put("/accesos/:id/estado", verificarToken, actualizarEstadoAcceso);
 
 export default router;

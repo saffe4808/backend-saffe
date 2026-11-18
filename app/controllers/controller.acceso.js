@@ -52,3 +52,26 @@ export const obtenerAcceso = async (req, res) => {
         return res.status(500).json({ error: error.message });
     }
 };
+
+export const actualizarEstadoAcceso = async (req, res) => {
+    try {
+        const { estado } = req.body;
+
+        if (!estado) {
+            return res.status(400).json({ mensaje: "El estado es obligatorio" });
+        }
+
+        const [resultado] = await conexion.query(
+            "UPDATE accesos SET estado = ? WHERE id = ?",
+            [estado, req.params.id]
+        );
+
+        if (resultado.affectedRows === 0) {
+            return res.status(404).json({ mensaje: "Acceso no encontrado" });
+        }
+
+        return res.json({ mensaje: "Estado del acceso actualizado correctamente" });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+};

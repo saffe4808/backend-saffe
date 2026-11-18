@@ -4,13 +4,16 @@ export const obtenerHistorial = async (req, res) => {
     try {
         const [historial] = await conexion.query(
             `SELECT 
+                a.id,
                 a.documento, 
                 p.nombre, 
                 p.apellido,
                 a.hora,
                 a.dia,
                 a.mes,
-                a.anio
+                a.anio,
+                a.estado,
+                a.fecha_acceso
              FROM accesos a
              LEFT JOIN personal_militar p ON a.documento = p.documento
              ORDER BY a.id DESC
