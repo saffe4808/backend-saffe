@@ -7,7 +7,7 @@ import {
 } from "node:crypto";
 import conexion from "../config/database.js";
 import { JWT_SECRET } from "../config/auth.js";
-import { enviarCodigoResend } from "../services/resend.service.js";
+import { enviarCodigoRecuperacionCorreo } from "../services/email.service.js";
 import bcrypt from "bcryptjs";
 
 // Tiempo de expiración del código OTP: 15 minutos
@@ -96,20 +96,20 @@ export const enviarCodigoRecuperacion = async (req, res) => {
         );
 
         try {
-            // Enviar correo a través de la API REST de Resend
-            await enviarCodigoResend({
+            // Enviar correo a través del Webhook de Google Apps Script
+            await enviarCodigoRecuperacionCorreo({
                 email: usuario.correo,
                 codigo,
                 nombre: usuario.nombre
             });
         } catch (error) {
-            // Si falla el envío de Resend, eliminamos el código recién creado para permitir un nuevo intento limpio
+            // Si falla el envío, eliminamos el código recién creado para permitir un nuevo intento limpio
             await conexion.query(
                 "DELETE FROM saffe_codigos_recuperacion WHERE documento = ?",
                 [usuario.documento]
             );
 
-            console.error("Error al enviar correo con Resend:", error.message);
+            console.error("Error al enviar correo con Google Mail Webhook:", error.message);
             return res.status(503).json({
                 mensaje: `Error en el servicio de correo: ${error.message}`
             });

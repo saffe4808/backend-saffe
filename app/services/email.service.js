@@ -1,18 +1,49 @@
 /**
- * Servicio para envío de correos utilizando la API REST de Resend
+ * Servicio para envío de correos utilizando el Webhook de Google Apps Script
  */
 
-const RESEND_API_URL = "https://api.resend.com/emails";
-const DEFAULT_FROM = "Sistema Facial <onboarding@resend.dev>";
+export const enviarCorreoWebhook = async ({ to, subject, html }) => {
+    const webhookUrl = (process.env.GOOGLE_MAIL_WEBHOOK || "").trim();
+    const secret = (process.env.MAIL_SECRET || "").trim();
 
-export const enviarCodigoResend = async ({ email, codigo, nombre = "Usuario" }) => {
-    const apiKey = (process.env.RESEND_API_KEY || "").trim();
-
-    if (!apiKey) {
-        throw new Error("RESEND_API_KEY no está configurada en el servidor.");
+    if (!webhookUrl) {
+        throw new Error("GOOGLE_MAIL_WEBHOOK no está configurada en las variables de entorno.");
     }
 
-    const remitente = (process.env.RESEND_FROM || DEFAULT_FROM).trim();
+    const payload = {
+        secret,
+        to,
+        subject,
+        html
+    };
+
+    const respuesta = await fetch(webhookUrl, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload),
+        redirect: "follow"
+    });
+
+    if (!respuesta.ok) {
+        const textoError = await respuesta.text().catch(() => "");
+        console.error("Error en Google Mail Webhook:", respuesta.status, textoError);
+        throw new Error(`Error en el servicio de correo (Status ${respuesta.status}): ${textoError || "Error en la petición"}`);
+    }
+
+    // Google Apps Script suele retornar texto o JSON tras la redirección
+    let resultado = null;
+    try {
+        resultado = await respuesta.json();
+    } catch {
+        resultado = { status: "ok" };
+    }
+
+    return resultado;
+};
+
+export const enviarCodigoRecuperacionCorreo = async ({ email, codigo, nombre = "Usuario" }) => {
     const destinatario = email.trim();
 
     const plantillaHtml = `
@@ -71,27 +102,9 @@ export const enviarCodigoResend = async ({ email, codigo, nombre = "Usuario" }) 
     </html>
     `;
 
-    const respuesta = await fetch(RESEND_API_URL, {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${apiKey}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            from: remitente,
-            to: [destinatario],
-            subject: "Código de recuperación de contraseña - SAFFE",
-            html: plantillaHtml
-        })
+    return await enviarCorreoWebhook({
+        to: destinatario,
+        subject: "Código de recuperación de contraseña - SAFFE",
+        html: plantillaHtml
     });
-
-    const data = await respuesta.json();
-
-    if (!respuesta.ok) {
-        console.error("Resend API error:", data);
-        const mensajeError = data.message || (data.errors && data.errors[0]?.message) || "Error al enviar el correo a través de Resend.";
-        throw new Error(mensajeError);
-    }
-
-    return data;
 };
