@@ -18,29 +18,81 @@ export const listarUsuarios = async (req, res) => {
     }
 };
 
+
 export const crearUsuario = async (req, res) => {
     try {
-        const { nombre, apellido, documento, correo, contraseña, rango } = req.body;
+        const {
+            nombre,
+            apellido,
+            documento,
+            correo,
+            contraseña,
+            rango,
+            descriptor_facial
+        } = req.body;
+
+        // Validar datos obligatorios
         if (!nombre || !apellido || !documento || !correo || !contraseña) {
             return res.status(400).json({
                 mensaje: "nombre, apellido, documento, correo y contraseña son obligatorios"
             });
         }
+
         if (!correoValido(correo)) {
-            return res.status(400).json({ mensaje: "Ingresa un correo válido." });
+            return res.status(400).json({
+                mensaje: "Ingresa un correo válido."
+            });
         }
 
+        // Validar descriptor facial generado por Human
+        if (
+            !Array.isArray(descriptor_facial) ||
+            descriptor_facial.length === 0 ||
+            !descriptor_facial.every(
+                valor => typeof valor === "number" && Number.isFinite(valor)
+            )
+        ) {
+            return res.status(400).json({
+                mensaje: "No se recibió una referencia facial válida."
+            });
+        }
+
+        // Guardar información personal y referencia facial
         await conexion.query(
             `INSERT INTO personal_militar
-             (nombre, apellido, documento, correo, contraseña, rango, fecha_registro)
-             VALUES (?, ?, ?, ?, ?, ?, NOW())`,
-            [nombre, apellido, documento, correo.trim(), contraseña, rango || null]
+            (nombre, apellido, documento, correo, contraseña, rango, fecha_registro, descriptor_facial)
+            VALUES (?, ?, ?, ?, ?, ?, NOW(), ?)`,
+            [
+                nombre.trim(),
+                apellido.trim(),
+                documento.trim(),
+                correo.trim(),
+                contraseña,
+                rango || null,
+                JSON.stringify(descriptor_facial)
+            ]
         );
-        return res.status(201).json({ mensaje: "Usuario registrado correctamente" });
+
+        return res.status(201).json({
+            mensaje: "Usuario registrado correctamente con referencia facial."
+        });
+
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        console.error("Error al registrar usuario:", error);
+
+        if (error.code === "ER_DUP_ENTRY") {
+            return res.status(409).json({
+                mensaje: "Ya existe un usuario registrado con ese documento."
+            });
+        }
+
+        return res.status(500).json({
+            mensaje: "Error al registrar el usuario.",
+            error: error.message
+        });
     }
 };
+
 
 export const obtenerUsuario = async (req, res) => {
     try {
