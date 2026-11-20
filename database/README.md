@@ -36,14 +36,21 @@ tablas compatibles con Railway:
    las páginas llamen al backend local.
 7. Desde `backend`, ejecuta `npm run dev`; desde `frontend`, ejecuta
    `npm run dev`.
-8. En Railway, configura `SMTP_USER` y `SMTP_APP_PASSWORD` como variables del
-   servicio backend. Railway Free, Trial y Hobby bloquean el SMTP saliente;
-   cambiar `SMTP_HOST` o el puerto no evita ese bloqueo. Para enviar por SMTP
-   desde Railway se requiere un plan que permita conexiones SMTP; en los planes
-   bloqueados, usa un proveedor con API HTTPS y adapta la integración o aloja el
-   backend en un servicio que permita SMTP. Railway inyecta las variables MySQL
-   (`MYSQLHOST`, `MYSQLPORT`, `MYSQLUSER`, `MYSQLPASSWORD`, `MYSQLDATABASE`).
-   En producción el backend usa las variables del servicio y no carga archivos
-   `.env`.
+8. Para desplegar en Render, crea los servicios backend y frontend desde sus
+   repositorios; ambos incluyen un `Dockerfile`. En el backend configura en
+   Render `DATABASE_URL` con la URL MySQL de TiDB, por ejemplo
+   `mysql://usuario:contraseña@host.tidbcloud.com:4000/sistema_usuarios`.
+   Codifica los caracteres especiales del usuario o contraseña como URL. La
+   conexión detecta el host de TiDB y habilita SSL; también puedes establecer
+   `DB_SSL=true`. La base de datos indicada debe existir en TiDB antes del
+   primer arranque; el backend crea y migra las tablas.
+9. En Render configura `JWT_SECRET` con un valor aleatorio y, si usas la
+   recuperación de contraseña, `SMTP_USER` y `SMTP_APP_PASSWORD` (más
+   `SMTP_HOST`, `SMTP_PORT` y `SMTP_SECURE` si tu proveedor lo requiere).
+   Configura `FRONTEND_ORIGIN` con el origen exacto del frontend. En el servicio
+   frontend configura `BACKEND_URL` con la URL pública del backend, por ejemplo
+   `https://backend-saffe.onrender.com` o la URL que Render asigne. Render
+   proporciona `PORT` automáticamente. Guarda todas las credenciales en las
+   variables de entorno de Render; nunca subas `.env` a Git.
 
 No copies filas de usuarios reales de Railway a este entorno de prueba.
