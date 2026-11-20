@@ -8,7 +8,6 @@ import { normalizarOrigen } from "./app/config/origin.js";
 import routeUsuario from "./app/routes/routes.usuario.js";
 import routeAuth from "./app/routes/routes.auth.js";
 import routeAcceso from "./app/routes/routes.acceso.js";
-import routeEscaneo from "./app/routes/routes.escaneo.js";
 import routeHistorial from "./app/routes/routes.historial.js";
 import routeRostro from "./app/routes/routes.rostro.js";
 
@@ -57,7 +56,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api", routeUsuario);
 app.use("/api", routeAuth);
 app.use("/api", routeAcceso);
-app.use("/api", routeEscaneo);
 app.use("/api", routeHistorial);
 app.use("/api", routeRostro);
 
