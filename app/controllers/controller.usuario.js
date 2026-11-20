@@ -1,6 +1,7 @@
 import conexion from "../config/database.js";
+import bcrypt from "bcryptjs";
 
-const camposUsuario = "documento, nombre, apellido, correo, rango, fecha_registro";
+const camposUsuario = "documento, nombre, apellido, correo, rango, rol, fecha_registro";
 
 const correoValido = (correo) =>
     typeof correo === "string" &&
@@ -36,16 +37,17 @@ export const crearUsuario = async (req, res) => {
 
         const vector = faceDescriptor || descriptor;
         const descriptorJSON = (vector && Array.isArray(vector)) ? JSON.stringify(vector) : null;
+        const contraseñaHash = await bcrypt.hash(contraseña, 12);
 
         await conexion.query(
             `INSERT INTO personal_militar
-             (nombre, apellido, documento, correo, contraseña, rango, descriptor_facial, face_descriptor, fecha_registro)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
-            [nombre, apellido, documento, correo.trim(), contraseña, rango || null, descriptorJSON, descriptorJSON]
+             (nombre, apellido, documento, correo, contraseña, rango, rol, descriptor_facial, face_descriptor, fecha_registro)
+             VALUES (?, ?, ?, ?, ?, ?, 'usuario', ?, ?, NOW())`,
+            [nombre, apellido, documento, correo.trim(), contraseñaHash, rango || null, descriptorJSON, descriptorJSON]
         );
 
         return res.status(201).json({
-            mensaje: "Usuario registrado correctamente con referencia facial."
+            mensaje: "Usuario registrado correctamente."
         });
 
     } catch (error) {
@@ -67,6 +69,15 @@ export const crearUsuario = async (req, res) => {
 
 export const obtenerUsuario = async (req, res) => {
     try {
+        if (
+            req.usuario.rol !== "admin" &&
+            req.usuario.documento !== req.params.documento
+        ) {
+            return res.status(403).json({
+                mensaje: "No tienes permiso para consultar este perfil."
+            });
+        }
+
         const [usuarios] = await conexion.query(
             `SELECT ${camposUsuario} FROM personal_militar WHERE documento = ?`,
             [req.params.documento]
@@ -144,6 +155,30 @@ export const actualizarUsuario = async (req, res) => {
 
 export const eliminarUsuario = async (req, res) => {
     try {
+        if (req.params.documento === req.usuario.documento) {
+            return res.status(409).json({
+                mensaje: "No puedes eliminar la cuenta con la que iniciaste sesión."
+            });
+        }
+
+        const [administradores] = await conexion.query(
+            "SELECT COUNT(*) AS total FROM personal_militar WHERE rol = 'admin'"
+        );
+        const [usuarioObjetivo] = await conexion.query(
+            "SELECT rol FROM personal_militar WHERE documento = ? LIMIT 1",
+            [req.params.documento]
+        );
+
+        if (
+            usuarioObjetivo.length > 0 &&
+            usuarioObjetivo[0].rol === "admin" &&
+            administradores[0].total <= 1
+        ) {
+            return res.status(409).json({
+                mensaje: "No se puede eliminar al último administrador."
+            });
+        }
+
         const [resultado] = await conexion.query(
             "DELETE FROM personal_militar WHERE documento = ?",
             [req.params.documento]

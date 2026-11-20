@@ -6,13 +6,17 @@ import {
     restablecerContrasena,
     verificarCodigoRecuperacion
 } from "../controllers/controller.recuperacion.js";
+import {
+    verificarAdministrador,
+    verificarToken
+} from "../middleware/auth.middleware.js";
 
 const router = Router();
 
 // Rutas de inicio de sesión
 router.post("/login", login);
 router.post("/login-facial", loginFacial);
-router.post("/usuarios/rostro", registrarRostro);
+router.post("/usuarios/rostro", verificarToken, verificarAdministrador, registrarRostro);
 
 // Rutas de recuperación de contraseña (Endpoints estándar solicitados)
 router.post("/forgot-password", enviarCodigoRecuperacion);

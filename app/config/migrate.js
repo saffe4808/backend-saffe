@@ -9,6 +9,7 @@ const crearTablas = async () => {
             correo VARCHAR(254) NOT NULL,
             \`contraseña\` VARCHAR(255) NOT NULL,
             rango VARCHAR(100) DEFAULT NULL,
+            rol VARCHAR(20) NOT NULL DEFAULT 'usuario',
             fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             descriptor_facial LONGTEXT DEFAULT NULL,
             PRIMARY KEY (documento)
@@ -85,6 +86,7 @@ export const migrarBaseDeDatos = async () => {
 
     await asegurarColumna("personal_militar", "correo", "VARCHAR(254) NULL");
     await asegurarColumna("personal_militar", "rango", "VARCHAR(100) NULL");
+    await asegurarColumna("personal_militar", "rol", "VARCHAR(20) NOT NULL DEFAULT 'usuario'");
     await asegurarColumna("personal_militar", "fecha_registro", "DATETIME NULL");
     await asegurarColumna("personal_militar", "descriptor_facial", "LONGTEXT NULL");
     await asegurarColumna("personal_militar", "face_descriptor", "LONGTEXT NULL");

@@ -2,6 +2,12 @@ import conexion from "../config/database.js";
 
 export const obtenerHistorial = async (req, res) => {
     try {
+        const filtroPersonal = req.usuario.rol === "admin"
+            ? ""
+            : "WHERE a.documento = ?";
+        const parametros = req.usuario.rol === "admin"
+            ? []
+            : [req.usuario.documento];
         const [historial] = await conexion.query(
             `SELECT 
                 a.id,
@@ -16,8 +22,10 @@ export const obtenerHistorial = async (req, res) => {
                 a.fecha_acceso
              FROM accesos a
              LEFT JOIN personal_militar p ON a.documento = p.documento
+             ${filtroPersonal}
              ORDER BY a.id DESC
-             LIMIT 50`
+             LIMIT 50`,
+            parametros
         );
 
         return res.json(historial);

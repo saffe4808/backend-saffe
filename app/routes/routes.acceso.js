@@ -9,7 +9,10 @@ import {
 
 } from "../controllers/controller.acceso.js";
 
-import { verificarToken } from "../middleware/auth.middleware.js";
+import {
+    verificarAdministrador,
+    verificarToken
+} from "../middleware/auth.middleware.js";
 
 const router = Router();
 
@@ -17,12 +20,12 @@ const router = Router();
 router.post("/accesos", verificarToken, registrarAcceso);
 
 // Listar accesos
-router.get("/accesos", verificarToken, listarAccesos);
+router.get("/accesos", verificarToken, verificarAdministrador, listarAccesos);
 
 // Buscar acceso
-router.get("/accesos/:id", verificarToken, obtenerAcceso);
+router.get("/accesos/:id", verificarToken, verificarAdministrador, obtenerAcceso);
 
 // Actualizar estado del acceso
-router.put("/accesos/:id/estado", verificarToken, actualizarEstadoAcceso);
+router.put("/accesos/:id/estado", verificarToken, verificarAdministrador, actualizarEstadoAcceso);
 
 export default router;

@@ -3,7 +3,8 @@
 El backend usa MySQL. `schema.local.sql` crea la base `sistema_usuarios` y las
 tablas compatibles con Railway:
 
-- `personal_militar`, incluido el correo usado por recuperación de contraseña.
+- `personal_militar`, incluido el correo usado por recuperación de contraseña
+  y el rol de acceso (`usuario` o `admin`).
 - `accesos`, con las columnas de la tabla existente y las columnas adicionales
   que requieren las rutas actuales de acceso.
 - `saffe_codigos_recuperacion`, para los códigos temporales.
@@ -30,8 +31,8 @@ tablas compatibles con Railway:
    columna, el siguiente código se envía al nuevo correo. Local y Railway usan
    bases de datos distintas, así que un cambio en una no modifica la otra.
    También se puede actualizar el correo mediante `PUT /api/usuarios/:documento`
-   con autorización y solo el campo `correo`; la ruta valida y guarda el valor
-   sin sobrescribir los demás datos del usuario.
+   con una cuenta `admin` y solo el campo `correo`; la ruta valida y guarda el
+   valor sin sobrescribir los demás datos del usuario.
 6. En `frontend/.env`, configura `BACKEND_URL=http://localhost:3000` para que
    las páginas llamen al backend local.
 7. Desde `backend`, ejecuta `npm run dev`; desde `frontend`, ejecuta
@@ -52,5 +53,21 @@ tablas compatibles con Railway:
    `https://backend-saffe.onrender.com` o la URL que Render asigne. Render
    proporciona `PORT` automáticamente. Guarda todas las credenciales en las
    variables de entorno de Render; nunca subas `.env` a Git.
+10. Para habilitar la administración, primero registra e identifica la cuenta
+    de una persona de confianza y luego, desde MySQL Workbench conectado a la
+    base de datos que usa el backend, ejecuta:
+
+    ```sql
+    UPDATE personal_militar
+    SET rol = 'admin'
+    WHERE documento = 'DOCUMENTO_DE_CONFIANZA';
+    ```
+
+    Los usuarios existentes y los registros públicos reciben `usuario` por
+    defecto. El rol no se puede asignar desde el formulario ni modificando el
+    `rango`; solo una cuenta `admin` puede consultar la gestión, registrar
+    usuarios desde el perfil, actualizarlos o eliminarlos. La sesión vuelve a
+    comprobar el rol contra la base de datos en cada solicitud. Conserva al
+    menos una cuenta administradora; la API impide eliminar la última.
 
 No copies filas de usuarios reales de Railway a este entorno de prueba.

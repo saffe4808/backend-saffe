@@ -4,6 +4,7 @@ import {
     registrarAcceso
 } from "../controllers/controller.historial.js";
 import {
+    verificarAdministrador,
     verificarToken
 } from "../middleware/auth.middleware.js";
 
@@ -20,6 +21,7 @@ router.get(
 router.post(
     "/historial",
     verificarToken,
+    verificarAdministrador,
     registrarAcceso
 );
 
