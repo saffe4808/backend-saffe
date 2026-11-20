@@ -18,6 +18,7 @@ export const listarUsuarios = async (req, res) => {
     }
 };
 
+
 export const crearUsuario = async (req, res) => {
     try {
         const { nombre, apellido, documento, correo, contraseña, rango, faceDescriptor, descriptor } = req.body;
@@ -26,8 +27,11 @@ export const crearUsuario = async (req, res) => {
                 mensaje: "nombre, apellido, documento, correo y contraseña son obligatorios"
             });
         }
+
         if (!correoValido(correo)) {
-            return res.status(400).json({ mensaje: "Ingresa un correo válido." });
+            return res.status(400).json({
+                mensaje: "Ingresa un correo válido."
+            });
         }
 
         const vector = faceDescriptor || descriptor;
@@ -39,11 +43,27 @@ export const crearUsuario = async (req, res) => {
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
             [nombre, apellido, documento, correo.trim(), contraseña, rango || null, descriptorJSON, descriptorJSON]
         );
-        return res.status(201).json({ mensaje: "Usuario registrado correctamente" });
+
+        return res.status(201).json({
+            mensaje: "Usuario registrado correctamente con referencia facial."
+        });
+
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        console.error("Error al registrar usuario:", error);
+
+        if (error.code === "ER_DUP_ENTRY") {
+            return res.status(409).json({
+                mensaje: "Ya existe un usuario registrado con ese documento."
+            });
+        }
+
+        return res.status(500).json({
+            mensaje: "Error al registrar el usuario.",
+            error: error.message
+        });
     }
 };
+
 
 export const obtenerUsuario = async (req, res) => {
     try {
