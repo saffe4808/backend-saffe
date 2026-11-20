@@ -23,7 +23,7 @@ const allowedOrigins = (process.env.FRONTEND_ORIGIN ||
     .map(normalizarOrigen)
     .filter(Boolean);
 
-app.use(express.json());
+app.use(express.json({ limit: "512kb" }));
 app.use(cors({
     origin: (origin, callback) => {
         // Peticiones sin origen (Postman, curl, Render health check, server-to-server)
@@ -79,6 +79,10 @@ app.get("/health", async (req, res) => {
 app.use((error, req, res, next) => {
     if (error.message === "Origen no permitido por CORS") {
         return res.status(403).json({ mensaje: error.message });
+    }
+
+    if (error.type === "entity.too.large") {
+        return res.status(413).json({ mensaje: "La solicitud supera el tamaño permitido." });
     }
 
     console.error("Error no controlado en la API:", error.message);

@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS personal_militar (
     `contraseña` VARCHAR(255) NOT NULL,
     rango VARCHAR(100) DEFAULT NULL,
     rol VARCHAR(20) NOT NULL DEFAULT 'usuario',
+    foto_perfil MEDIUMTEXT DEFAULT NULL,
     fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     descriptor_facial LONGTEXT DEFAULT NULL,
     PRIMARY KEY (documento)

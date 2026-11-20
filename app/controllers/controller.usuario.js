@@ -2,6 +2,8 @@ import conexion from "../config/database.js";
 import bcrypt from "bcryptjs";
 
 const camposUsuario = "documento, nombre, apellido, correo, rango, rol, fecha_registro";
+const camposUsuarioConFoto = `${camposUsuario}, foto_perfil`;
+const MAX_FOTO_BYTES = 350 * 1024;
 
 const correoValido = (correo) =>
     typeof correo === "string" &&
@@ -79,7 +81,7 @@ export const obtenerUsuario = async (req, res) => {
         }
 
         const [usuarios] = await conexion.query(
-            `SELECT ${camposUsuario} FROM personal_militar WHERE documento = ?`,
+            `SELECT ${camposUsuarioConFoto} FROM personal_militar WHERE documento = ?`,
             [req.params.documento]
         );
         if (usuarios.length === 0) {
@@ -88,6 +90,53 @@ export const obtenerUsuario = async (req, res) => {
         return res.json(usuarios[0]);
     } catch (error) {
         return res.status(500).json({ error: error.message });
+    }
+};
+
+export const actualizarFotoUsuario = async (req, res) => {
+    try {
+        const foto = req.body?.foto;
+        const coincidencia = typeof foto === "string"
+            ? /^data:image\/jpeg;base64,([A-Za-z0-9+/]+={0,2})$/.exec(foto)
+            : null;
+
+        if (!coincidencia) {
+            return res.status(400).json({
+                mensaje: "La foto debe enviarse como una imagen JPEG válida."
+            });
+        }
+
+        const fotoBuffer = Buffer.from(coincidencia[1], "base64");
+        if (
+            fotoBuffer.length === 0 ||
+            fotoBuffer.length > MAX_FOTO_BYTES ||
+            fotoBuffer.toString("base64") !== coincidencia[1] ||
+            fotoBuffer[0] !== 0xff ||
+            fotoBuffer[1] !== 0xd8 ||
+            fotoBuffer[2] !== 0xff
+        ) {
+            return res.status(400).json({
+                mensaje: "La foto supera el tamaño permitido o no es válida."
+            });
+        }
+
+        const [usuarios] = await conexion.query(
+            "SELECT 1 FROM personal_militar WHERE documento = ? LIMIT 1",
+            [req.params.documento]
+        );
+        if (usuarios.length === 0) {
+            return res.status(404).json({ mensaje: "Usuario no encontrado." });
+        }
+
+        await conexion.query(
+            "UPDATE personal_militar SET foto_perfil = ? WHERE documento = ?",
+            [foto, req.params.documento]
+        );
+
+        return res.json({ mensaje: "Foto de perfil actualizada correctamente." });
+    } catch (error) {
+        console.error("Error al actualizar la foto de perfil:", error);
+        return res.status(500).json({ mensaje: "No se pudo actualizar la foto." });
     }
 };
 
@@ -195,7 +244,7 @@ export const eliminarUsuario = async (req, res) => {
 export const obtenerPerfil = async (req, res) => {
     try {
         const [usuarios] = await conexion.query(
-            `SELECT ${camposUsuario} FROM personal_militar WHERE documento = ?`,
+            `SELECT ${camposUsuarioConFoto} FROM personal_militar WHERE documento = ?`,
             [req.usuario.documento]
         );
         if (usuarios.length === 0) {

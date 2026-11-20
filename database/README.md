@@ -4,7 +4,7 @@ El backend usa MySQL. `schema.local.sql` crea la base `sistema_usuarios` y las
 tablas compatibles con Railway:
 
 - `personal_militar`, incluido el correo usado por recuperación de contraseña
-  y el rol de acceso (`usuario` o `admin`).
+  el rol de acceso (`usuario` o `admin`) y la foto de perfil.
 - `accesos`, con las columnas de la tabla existente y las columnas adicionales
   que requieren las rutas actuales de acceso.
 - `saffe_codigos_recuperacion`, para los códigos temporales.
@@ -72,6 +72,8 @@ tablas compatibles con Railway:
     iniciar sesión, los administradores llegan al perfil y pueden filtrar el
     historial global por documento, nombre o rango. Los usuarios normales
     llegan a la pantalla de acceso autorizado y la API solo les entrega su
-    historial personal.
+    historial personal. Desde la gestión del personal, un administrador también
+    puede actualizar la foto de un usuario; las imágenes se reducen y almacenan
+    como JPEG en la base de datos.
 
 No copies filas de usuarios reales de Railway a este entorno de prueba.
