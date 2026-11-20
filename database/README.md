@@ -68,6 +68,10 @@ tablas compatibles con Railway:
     `rango`; solo una cuenta `admin` puede consultar la gestión, registrar
     usuarios desde el perfil, actualizarlos o eliminarlos. La sesión vuelve a
     comprobar el rol contra la base de datos en cada solicitud. Conserva al
-    menos una cuenta administradora; la API impide eliminar la última.
+    menos una cuenta administradora; la API impide eliminar la última. Al
+    iniciar sesión, los administradores llegan al perfil y pueden filtrar el
+    historial global por documento, nombre o rango. Los usuarios normales
+    llegan a la pantalla de acceso autorizado y la API solo les entrega su
+    historial personal.
 
 No copies filas de usuarios reales de Railway a este entorno de prueba.
