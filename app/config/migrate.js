@@ -87,6 +87,7 @@ export const migrarBaseDeDatos = async () => {
     await asegurarColumna("personal_militar", "rango", "VARCHAR(100) NULL");
     await asegurarColumna("personal_militar", "fecha_registro", "DATETIME NULL");
     await asegurarColumna("personal_militar", "descriptor_facial", "LONGTEXT NULL");
+    await asegurarColumna("personal_militar", "face_descriptor", "LONGTEXT NULL");
 
     await asegurarColumna("accesos", "hora", "TIME NULL");
     await asegurarColumna("accesos", "dia", "TINYINT UNSIGNED NULL");

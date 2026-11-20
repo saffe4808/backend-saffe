@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { login } from "../controllers/controller.auth.js";
+import { login, loginFacial, registrarRostro } from "../controllers/controller.auth.js";
 import {
     enviarCodigoRecuperacion,
     restablecerContrasena,
@@ -9,8 +9,10 @@ import {
 
 const router = Router();
 
-// Ruta para iniciar sesión
+// Rutas de inicio de sesión
 router.post("/login", login);
+router.post("/login-facial", loginFacial);
+router.post("/usuarios/rostro", registrarRostro);
 
 // Rutas de recuperación de contraseña (Endpoints estándar solicitados)
 router.post("/forgot-password", enviarCodigoRecuperacion);

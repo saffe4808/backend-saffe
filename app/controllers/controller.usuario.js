@@ -20,7 +20,7 @@ export const listarUsuarios = async (req, res) => {
 
 export const crearUsuario = async (req, res) => {
     try {
-        const { nombre, apellido, documento, correo, contraseña, rango } = req.body;
+        const { nombre, apellido, documento, correo, contraseña, rango, faceDescriptor, descriptor } = req.body;
         if (!nombre || !apellido || !documento || !correo || !contraseña) {
             return res.status(400).json({
                 mensaje: "nombre, apellido, documento, correo y contraseña son obligatorios"
@@ -30,11 +30,14 @@ export const crearUsuario = async (req, res) => {
             return res.status(400).json({ mensaje: "Ingresa un correo válido." });
         }
 
+        const vector = faceDescriptor || descriptor;
+        const descriptorJSON = (vector && Array.isArray(vector)) ? JSON.stringify(vector) : null;
+
         await conexion.query(
             `INSERT INTO personal_militar
-             (nombre, apellido, documento, correo, contraseña, rango, fecha_registro)
-             VALUES (?, ?, ?, ?, ?, ?, NOW())`,
-            [nombre, apellido, documento, correo.trim(), contraseña, rango || null]
+             (nombre, apellido, documento, correo, contraseña, rango, descriptor_facial, face_descriptor, fecha_registro)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+            [nombre, apellido, documento, correo.trim(), contraseña, rango || null, descriptorJSON, descriptorJSON]
         );
         return res.status(201).json({ mensaje: "Usuario registrado correctamente" });
     } catch (error) {

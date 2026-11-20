@@ -10,6 +10,7 @@ import routeAuth from "./app/routes/routes.auth.js";
 import routeAcceso from "./app/routes/routes.acceso.js";
 import routeEscaneo from "./app/routes/routes.escaneo.js";
 import routeHistorial from "./app/routes/routes.historial.js";
+import routeRostro from "./app/routes/routes.rostro.js";
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
@@ -58,6 +59,7 @@ app.use("/api", routeAuth);
 app.use("/api", routeAcceso);
 app.use("/api", routeEscaneo);
 app.use("/api", routeHistorial);
+app.use("/api", routeRostro);
 
 // Alias directos para /forgot-password y /reset-password (además de /api/...)
 app.use("/", routeAuth);
